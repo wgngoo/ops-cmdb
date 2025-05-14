@@ -167,7 +167,7 @@ func (client *CmdbClient) SearchInstanceV3Page(objectId string, req *InstanceApi
 }
 
 // GetHostForCmdb 获取主机信息
-func (s *ResourceService) GetHostForCmdb(objectId string, fields []string, query map[string]interface{}) error {
+func (s *ResourceService) GetCmdbResource(objectId string, fields []string, query map[string]interface{}) error {
 	response, err := s.fetchCmdbResources(objectId, fields, query)
 	if err != nil {
 		return err
