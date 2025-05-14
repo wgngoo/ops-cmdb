@@ -1,0 +1,23 @@
+# 忽略 examples 目录
+examples/
+
+# Go 相关忽略
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+/go.sum
+
+# IDE 相关忽略
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统相关忽略
+.DS_Store
+Thumbs.db 
