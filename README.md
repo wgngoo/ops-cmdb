@@ -10,6 +10,7 @@
 - 支持区域管理
 - 支持分页查询
 - 支持复杂的查询条件构建
+- 支持域名可用性检查
 
 ## 安装
 
@@ -22,10 +23,10 @@ go get github.com/ops-cmdb/cmdb_sdk_go
 ### 1. 创建配置
 
 ```go
-config := &models.Config{
-	AccessKey: utils.String("your_access_key"),
-	SecretKey: utils.String("your_secret_key"),
-	Host:      utils.String("ops-cmdb.api.leiniao.com"),
+config := &api.Config{
+	AccessKey: api.String("your_access_key"),
+	SecretKey: api.String("your_secret_key"),
+	Host:      api.String("ops-cmdb.api.xxx.com"),
 }
 ```
 
@@ -41,7 +42,7 @@ resourceService := api.NewResourceService(client)
 ```go
 // 设置查询参数
 objectId := "DNSRECORD"
-fields := []string{"name", "ip", "hostname"}
+fields := []string{"name"}
 
 // 构建查询条件
 queryStr := `{
@@ -57,13 +58,25 @@ queryStr := `{
 // 使用 StringFormat 格式化查询条件
 query, err := utils.StringFormat(queryStr)
 if err != nil {
-	log.Fatalf("格式化查询条件失败: %v", err)
+	log.Fatalf("解析查询条件失败: %v", err)
 }
 
 // 获取资源信息
-if err := resourceService.GetHostForCmdb(objectId, fields, query); err != nil {
+result, err := resourceService.GetCmdbResource(objectId, fields, query)
+if err != nil {
 	log.Fatalf("获取资源信息失败: %v", err)
 }
+fmt.Println(string(result.Data.List))
+```
+
+### 4. 检查域名可用性
+
+```go
+available, err := resourceService.CheckDomainAvailability("apk.tclclouds.com")
+if err != nil {
+	log.Fatalf("检查域名是否存在失败: %v", err)
+}
+fmt.Println(available)
 ```
 
 ## 支持的资源类型
@@ -94,7 +107,7 @@ SDK 支持多种查询操作符：
 SDK 使用标准的 Go 错误处理机制，所有可能失败的操作都会返回 error。建议始终检查返回的错误：
 
 ```go
-if err := resourceService.GetHostForCmdb(objectId, fields, query); err != nil {
+if err := resourceService.GetCmdbResource(objectId, fields, query); err != nil {
 	log.Printf("操作失败: %v", err)
 	return
 }
