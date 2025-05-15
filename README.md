@@ -55,9 +55,10 @@ func main() {
 		}]
 	}`
 	
-	var query map[string]interface{}
-	if err := json.Unmarshal([]byte(queryStr), &query); err != nil {
-		log.Fatalf("解析查询条件失败: %v", err)
+	// 使用 StringFormat 格式化查询条件
+	query, err := utils.StringFormat(queryStr)
+	if err != nil {
+		log.Fatalf("格式化查询条件失败: %v", err)
 	}
 
 	// 获取主机信息
