@@ -10,12 +10,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	netUrl "net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/wgngoo/ops-cmdb/pkg/cmdb_sdk_go/utils"
 )
 
 // NewCmdbClient 创建新的 CMDB 客户端
@@ -167,13 +170,45 @@ func (client *CmdbClient) SearchInstanceV3Page(objectId string, req *InstanceApi
 }
 
 // GetHostForCmdb 获取主机信息
-func (s *ResourceService) GetCmdbResource(objectId string, fields []string, query map[string]interface{}) error {
+func (s *ResourceService) GetCmdbResource(objectId string, fields []string, query map[string]interface{}) (*CmdbListResponse, error) {
 	response, err := s.fetchCmdbResources(objectId, fields, query)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	fmt.Println("response: ", string(response.Data.List))
-	return nil
+	return response, nil
+}
+
+func (s *ResourceService) CheckDomainAvailability(domainName string) (bool, error) {
+	// 设置查询参数
+	objectId := "DNSRECORD"
+	fields := []string{"name"}
+
+	// 构建查询条件
+	queryStr := fmt.Sprintf(`{
+		"$and": [{
+			"$or": [{
+				"name": {
+					"$eq": "%s"
+				}
+			}]
+		}]
+	}`, domainName)
+
+	query, err := utils.StringFormat(queryStr)
+	if err != nil {
+		log.Fatalf("解析查询条件失败: %v", err)
+		return false, err
+	}
+	result, err := s.GetCmdbResource(objectId, fields, query)
+	if err != nil {
+		log.Fatalf("获取主机信息失败: %v", err)
+		return false, err
+	}
+	if len(result.Data.List) > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
 // fetchCmdbResources 获取 CMDB 资源
